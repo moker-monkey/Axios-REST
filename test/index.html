@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="../node_modules/mocha/mocha.css" />
+    <script src="../node_modules/mocha/mocha.js"></script>
+    <script src="../node_modules/chai/chai.js"></script>
+</head>
+<body>
+    <div id="mocha"></div>
+</body>
+<script src="../node_modules/axios/dist/axios.js"></script>
+<script src="../dist/FleetApi.js"></script>
+<script>
+    mocha.allowUncaught() //(仅浏览器）如果被调用，错误处理程序将不会吸收未捕获的错误。
+    mocha.setup('bdd')
+</script>
+<script src="index.js"></script>
+<script>
+    mocha.run()
+</script>
+</html>
