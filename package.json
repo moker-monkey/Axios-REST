@@ -1,5 +1,5 @@
 {
-  "name": "axios-rest",
+  "name": "axios-rest-manager",
   "version": "1.0.0",
   "description": "The Axios-REST is a Class wrap by REST-style onto Axios, it has a lot of functions to control network for browser, example download、upload、big file upload、auth、local service、api manage and so on. ",
   "main": "./dist/axios-rest.cjs",
@@ -14,14 +14,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/moker-monkey/FleetApi.git"
+    "url": "git+https://github.com/moker-monkey/Axios-REST.git"
   },
   "keywords": [
     "axios",
     "rest",
+    "api",
     "manager"
   ],
-  "author": "moker-monkey",
+  "author": "moker-monker",
   "license": "Apache-2.0",
   "bugs": {
     "url": "https://github.com/moker-monkey/axios-rest/issues"
