@@ -11,9 +11,9 @@ interface request_interceptors {
     error(error: AxiosError): any
 }
 
-interface mock {
+interface service {
     methods: Method;
-    schema: any;
+    service: any;
 }
 
 export class Api {
@@ -27,7 +27,7 @@ export class Api {
     
     success: any;
     error: any;
-    isUseMock: boolean = false;
+    isLocalService: boolean = false;
     baseurl!: string;
     mockSchema?: object;
     describe?: string;
@@ -65,7 +65,7 @@ export class Api {
             config = assign(config, this.config)
             config = Object.assign(config, this.request_interceptor.success.call(this, config) || {})
             // tslint:disable-next-line: no-unused-expression
-            this.isUseMock && (config = Object.assign(config, this.mock_interceptors(config) || {}))
+            this.isLocalService && (config = Object.assign(config, this.mock_interceptors(config) || {}))
             Api.plugins_option.show = true;
             return config
         }, (err: any) => {
@@ -90,13 +90,13 @@ export class Api {
     }
     mock_interceptors(config: AxiosRequestConfig) {
         for (const i of Api.mockDataList) {
-            if ((i.isUseMock && this.isUseMock) && config.method && config.url && (i.affix ? config.url.match(`${i.route}\\d+/${i.affix}`) : config.url === i.url) && i.alreadyMockMethod.indexOf(config.method.toLocaleUpperCase()) !== -1) {
+            if ((i.isLocalService && this.isLocalService) && config.method && config.url && (i.affix ? config.url.match(`${i.route}\\d+/${i.affix}`) : config.url === i.url) && i.alreadyMockMethod.indexOf(config.method.toLocaleUpperCase()) !== -1) {
                 const index = i.alreadyMockMethod.indexOf(config.method.toLocaleUpperCase())
                 if (index != -1) {
                     let str = i.route + `.*${i.affix ? '/' + i.affix + '/' : ''}`
-                    LocalService.listener(new RegExp(str) as any, config.method, i.mock[index].schema)
+                    LocalService.listener(new RegExp(str) as any, config.method, i.service[index].service)
                     console
-                        .warn(`[LocalService request]method:${i.mock[index].methods}&&url:${i.route}`)
+                        .warn(`[LocalService request]method:${i.service[index].methods}&&url:${i.route}`)
                 }
             }
         }
@@ -114,17 +114,17 @@ export class Api {
         }
         return res
     }
-    mock_all(flag: any) {
+    local_service_on(flag: any) {
         // tslint:disable-next-line: no-unused-expression
-        flag && console.warn(`warning: method mock_all of Api is turn on, that any request to server `)
-        this.isUseMock = flag;
+        flag && console.warn(`warning: method local_service_on of Api is turn on, that any request to server `)
+        this.isLocalService = flag;
     }
 }
 export class api {
     affix?: string | undefined;
     adapter: any = null;
-    mock: mock[] = []
-    isUseMock: boolean = false;
+    service: service[] = []
+    isLocalService: boolean = false;
     isUseParamsValidate: boolean = true;  // 如无必要不要开启，复杂表单可能有性能问题
     alreadyMockMethod: Method[] = [];
     alreadyParamsMethod: Method[] = [];
@@ -238,14 +238,14 @@ export class api {
         return url
     }
 
-    setMock(methods: Method, schema: any) {
-        this.mock.push({ methods, schema });
+    setService(methods: Method, service: any) {
+        this.service.push({ methods, service });
         if (this.alreadyMockMethod.indexOf(methods) !== -1) {
             throw Error(`${this.name ? this.name : this.url}，Api定义了重复的Method, 确保该api的每种method只设置了一个mock数据`)
         } else {
             this.alreadyMockMethod.push(methods)
         }
-        this.isUseMock = true;
+        this.isLocalService = true;
         Api.mockDataList.push(this)
     }
 
@@ -254,8 +254,8 @@ export class api {
         Api.dataAdapter.push(this)
     }
 
-    MockOn(flag: boolean) {
-        this.isUseMock = flag;
+    local_service_on(flag: boolean) {
+        this.isLocalService = flag;
         return this
     }
     getAxios() {

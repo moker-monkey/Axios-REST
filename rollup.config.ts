@@ -8,7 +8,7 @@ import { DEFAULT_EXTENSIONS } from '@babel/core'
 import { terser } from 'rollup-plugin-terser' // 读取 package.json 配置 
 import pkg from './package.json' // 当前运行环境，可通过 cross-env 命令行设置 
 const env = process.env.NODE_ENV // umd 模式的编译结果文件输出的全局变量名称 
-const name = 'FleetApi'
+const name = 'axios-rest'
 const config = {
 	// 入口文件，src/index.ts 
 	input: path.resolve(__dirname, 'src/index.ts'),
@@ -29,19 +29,19 @@ const config = {
 			format: 'es',
 		},
 		// umd 
-		{
-			// umd 导出文件的全局变量 
-			name,
-			// package.json 配置的 umd 属性 
-			file: pkg.browser,
-			exports: 'named',
-			format: 'umd',
-			globals:{
-				lodash:'lodash',
-				axios:'axios',
-				localservicejs:'localservicejs'
-			}
-		}
+		// {
+		// 	// umd 导出文件的全局变量 
+		// 	name,
+		// 	// package.json 配置的 umd 属性 
+		// 	file: pkg.browser,
+		// 	exports: 'named',
+		// 	format: 'umd',
+		// 	globals:{
+		// 		lodash:'lodash',
+		// 		axios:'axios',
+		// 		localservicejs:'localservicejs'
+		// 	}
+		// }
 	],
 	external: ['lodash', 'axios', 'localservicejs'],
 	plugins: [
