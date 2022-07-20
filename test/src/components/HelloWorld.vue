@@ -1,36 +1,67 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import {getMenu,net_get} from "../api"
+import { getMenu, net_get } from "../api"
+import WorkerHelper from "../../../src/webworker"
 
 defineProps<{ msg: string }>()
 
 const count = ref(0)
-const test_request = ()=>{
-  getMenu.GET({test:'hello'}).then((data)=>{
+const test_request = () => {
+  getMenu.GET({ test: 'hello' }).then((data) => {
     console.log(data)
   })
 }
-const net_request = ()=>{
-  net_get.GET({test:'net'}).then((data)=>{
+const net_request = () => {
+  net_get.GET({ test: 'net' }).then((data) => {
     console.log(data)
   })
 }
+const wh = new WorkerHelper()
+const foo = wh.createWorker(function () {
+  onmessage = ({ data: { jobId, message } }) => {
+    console.log(message);
+    console.log('i am receive jobId is:=====', jobId)
+    postMessage({ jobId, result: 'message from worker' });
+  };
+})
 
+// const web_worker_test = () => {
+//   foo({ hello: 'hello this is my life' }).then((res) => {
+//     console.log('res', res)
+//   })
+// }
+
+net_get.setWebworker(function () {
+  onmessage = ({ data: { jobId, message } }) => {
+    console.log('i am receive message is:-----', message);
+    console.log('i am receive jobId is:=====', jobId)
+    postMessage({ jobId, result: {msg:'this is a message'} });
+  };
+})
+const web_worker_test = () => {
+  net_get.GET_WORKER({ hello: 'world' }).then((res:any)=>{
+    console.log('fina_get',res)
+  })
+}
 </script>
 
 <template>
-  <h1>{{ msg }}</h1>
-
   <div class="card">
     <div class="text-5xl">测试本地请求：</div>
     <button type="button" @click="test_request">
-    测试
+      测试
     </button>
   </div>
   <div class="card">
     <div class="text-5xl">测试网络请求：</div>
     <button type="button" @click="net_request">
-    测试
+      测试
+    </button>
+  </div>
+  <div class="card">
+    <div class="text-5xl">webworker请求：</div>
+    <button type="button" @click="web_worker_test">
+      测试
     </button>
   </div>
 </template>

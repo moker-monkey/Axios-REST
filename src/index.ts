@@ -1,7 +1,9 @@
 import Axios, { AxiosStatic, AxiosRequestConfig, AxiosResponse, AxiosError, Method } from 'axios';
 import { assign } from 'lodash';
 import LocalService from 'localservicejs'
+import webWorkerHelper from './webworker'
 
+const wwh = new webWorkerHelper()
 interface response_interceptors {
     success(response: AxiosResponse): any,
     error(error: AxiosError, response: AxiosResponse): any
@@ -24,7 +26,7 @@ export class Api {
     static plugins_option: any = {
         show: false
     }
-    
+
     success: any;
     error: any;
     isLocalService: boolean = false;
@@ -134,6 +136,7 @@ export class api {
     private axios: AxiosStatic = Axios;
     name!: string;
     description!: string;
+    webworkerInstance?: any;
 
     constructor(route: string, route1?: string, route2?: string, route3?: string, route4?: string, otherRoute?: string[]) {
         // scope与route后都不需要带/,有函数自动判断并添加
@@ -212,10 +215,10 @@ export class api {
         );
         this.DOWNLOAD(fileName, url)
     }
-    UPLOAD_IMG(file_list:any){
+    UPLOAD_IMG(file_list: any) {
         //只能上传图片，传入一个originFileObj[]
         let formData = new FormData()
-        file_list.forEach((item:any) => {
+        file_list.forEach((item: any) => {
             formData.append('file', item.originFileObj);
         });
         return this.POST(formData)
@@ -248,7 +251,18 @@ export class api {
         this.isLocalService = true;
         Api.mockDataList.push(this)
     }
-
+    setWebworker(f: () => void) {
+        // 本质上f内的执行环境就是webworker的执行环境，注意api的引用
+        // function () {
+        //     onmessage = ({ data: { jobId, message } }) => {
+        //       postMessage({ jobId, result: 'message from worker' });
+        //     };
+        //   }
+        this.webworkerInstance = wwh.createWorker(f)
+    }
+    GET_WORKER(params: any) {
+        return this.webworkerInstance(params)
+    }
     setAdapter(callback: any) {
         this.adapter = callback;
         Api.dataAdapter.push(this)
