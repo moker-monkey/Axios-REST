@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { getMenu, net_get } from "../api"
-import WorkerHelper from "../../../src/webworker"
 
 defineProps<{ msg: string }>()
 
@@ -16,20 +15,7 @@ const net_request = () => {
     console.log(data)
   })
 }
-const wh = new WorkerHelper()
-const foo = wh.createWorker(function () {
-  onmessage = ({ data: { jobId, message } }) => {
-    console.log(message);
-    console.log('i am receive jobId is:=====', jobId)
-    postMessage({ jobId, result: 'message from worker' });
-  };
-})
 
-// const web_worker_test = () => {
-//   foo({ hello: 'hello this is my life' }).then((res) => {
-//     console.log('res', res)
-//   })
-// }
 
 net_get.setWebworker(function () {
   onmessage = ({ data: { jobId, message } }) => {

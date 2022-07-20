@@ -1,7 +1,6 @@
  # 介绍
-（开发中）
-Axios-REST是一个无侵入式REST风格的API请求框架，意味着它可以和任何框架共用，该框架是在Axios基础上的封装，其设计的目的是为了使REST风格的API变得易复用、易管理、更轻松的与后端接通，与此同时将一些常用的接口功能封装起来例如：上传、下载；
-Axios-REST能够极大简化（获取后端数据-数据转换-传入前端组件）数据传入组件的这一层。
+Axios-REST是一个无侵入式REST风格的API请求框架，其底层依赖axios以及对浏览器XMLHttpRequest对象或者ActiveXObject对象的重写，意味着某些高级功能只能够在浏览器环境下使用，该框架是在Axios基础上的封装，其设计的目的是为了使REST风格的API变得易复用、易管理、更轻松的与后端接通，与此同时将一些常用的接口功能封装起来例如：上传文件、下载文件、webWorker动态创建；
+Axios-REST能够极大简化数据传入前端组件前的过程（包括获取后端数据-数据转换)。
 
 ## REST风格
 > API接口是一种标准，这是该框架封装的基本原理，通常来说REST风格定义了URL路径合理的设计方式，现在先简单看看Axios-REST所理解的REST风格API应该是怎样的。
@@ -12,21 +11,23 @@ Axios-REST能够极大简化（获取后端数据-数据转换-传入前端组�
 ![image.png](https://cdn.nlark.com/yuque/0/2022/png/26397694/1649744988059-9467876a-50b5-4909-9fb4-2f8918054d50.png#clientId=u0d0b6dd6-ce96-4&crop=0&crop=0&crop=1&crop=1&from=paste&height=167&id=HTXqM&margin=%5Bobject%20Object%5D&name=image.png&originHeight=300&originWidth=450&originalType=binary&ratio=1&rotation=0&showTitle=false&size=62210&status=done&style=none&taskId=uadb46a9d-30cd-486b-985b-15316654600&title=&width=250)
 ### BaseURL
 需不需要在最后加斜杠？
-Axios-REST认为，斜杠前面部分是为了找到机器，因此我们的重点是PATH的与QUERY STRING的定义规则
 我们一般规定http://sitechecker.pro/这是定位到sitechecker.pro这个机器的根目录，根目录也算做PATH的一部分，因此在配置全局的baseURL时就不必去定义path部分，当然大家的习惯未必一样，因此在框架里兼容了这样的情况。
 
 ### Path
 ![](https://cdn.nlark.com/yuque/0/2022/jpeg/26397694/1649754553393-b26c81aa-15fc-4dc2-8254-3ec2f6fe6464.jpeg)
 
-以一个日志资源的操作的接口为例，这个接口的意思就可以解读为，操作ODMS系统的log模块的ID为12343的日志
-简单清晰，接下来解释原因：
+以一个日志资源的操作的接口为例，这个接口的意思就可以解读为，对ODMS系统的log模块的ID为12343的日志进行run_log操作。
+
+---
+接下来补充一些知识：
 通常为了网络安全，我们机器对外只会默认开放80端口来接收外来http请求；
-path1：因为只有一个端口，所以需要使用nginx来分发请求，REST风格约定path1是作为分发标识来使用；
+path1：因为只有一个端口，所以需要使用nginx来分发请求，REST风格约定path1是作为系统标识符，标识该链接是属于哪个系统；
 path2：通常表示资源类型，例如：获取用户数据user_info，获取商品数据shop_store等；
 path3：可以是资源的ID、资源名，为资源的ID则最多有path4，此时path4表示对该资源的一种操作，若为资源名则不应该有path4（例如：/index.html,的**资源名**这是获取静态资源的请求，不应该有path4)；
 path4: 对资源的操作；
 当然以上都只是一种API定义风格的理解，市面上不同的框架有不同的接口风格，Axios-REST支持任何一种path的定义，但能遵循这样的Path可以是Axios-REST发挥最大功能。
 
+---
 ### Methods
 GET请求表示了获取资源
 POST请求表示创建资源
@@ -71,7 +72,7 @@ export default Api
 
 ## 发起请求
 ```typescript
-import  {localTest} from './api'
+import  {simpleUrl} from './api'
 /*
 用于应对：https://localhost:8080/local/test/
 */
@@ -105,6 +106,7 @@ complexUrl.GET({value:'hello'},'1234321').then(res=>{})
 //body:"{value:"hello"}"
 complexUrl.POST({value:'hello'},'1234321').then(res=>{})
 ```
+##进阶功能
 ### 下载功能
 Axios-REST针对下载场景进行了封装
 #### 下载Excel
@@ -169,7 +171,7 @@ api.runOrderSwitch.setAdapter('GET', (res) => {
 })
 ```
 ### 模拟本地服务
-beforeDone支持异步请求
+setService支持异步请求
 ```typescript
 import Api, {getChartsData} from './api'
 
@@ -177,33 +179,31 @@ import Api, {getChartsData} from './api'
 Api.local_servers_on(true) 
 
 // 模拟一个后端服务，拦截请求并返回数据
-// service内只能写同步的方法
-//beforeDone，在数据返回之前能够异步调用一些数据，beforeDone内可以进行异步调用
-// beforeDone返回的数据能够在服务中获取
-getChartsData.onLocalService('GET', (req, before) => {
-    console.log('done', before)
-    return {
-        results: {
-            xAxis: date,
-            yAxis: data
-        }
-    }
-}, (req,resolve,reject) => {
+//setService，在数据返回之前能够异步调用一些数据，setService内可以进行异步调用,resolve返回成功数据,reject返回失败数据，
+//注意返回数据的格式，status为响应码，response的值是返回的内容
+getChartsData.setService('GET', (req,resolve,reject) => {
     setTimeout(() => {
-        resolve({ 'done': 'before' })
+        resolve({status:201, response: {msg:'this is a message'} })
     }, 5000);
 
 })
 ```
-### 响应分发
-当某个接口调用并返回时可以获取到返回值，这项功能可以用于组件间的交流，绝对本地服务的话都推荐监听LINK方法
+### webWorker
+可以方便的动态设置webworker函数，同时像获取普通服务数据一样获取计算值
 ```typescript
-import {localTest} from './api'
+import {some_api} from './api'
 
 // 当某个接口调用并返回时可以获取到返回值
-localTest.resListeners('GET',(data)=>{
-  
+some_api.setWebworker(function () {
+  onmessage = ({ data: { jobId, message } }) => {
+    console.log('i am receive message is:-----', message);
+    console.log('i am receive jobId is:=====', jobId)
+    postMessage({ jobId, result: {msg:'this is a message'} });
+  };
 })
+some_api.GET_WORKER({ hello: 'world' }).then((res:any)=>{
+    console.log('fina_get',res)
+  })
 ```
 ## 请求全流程
 注意所有圆角矩形是都是可以省略，而矩形框不能省略
