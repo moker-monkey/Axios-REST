@@ -6,27 +6,31 @@ defineProps<{ msg: string }>()
 
 const count = ref(0)
 const test_request = () => {
-  getMenu.GET({ test: 'hello' }).then((data) => {
+  getMenu.GET({ test: 'hello' }).then((data:any) => {
     console.log(data)
   })
 }
 const net_request = () => {
-  net_get.GET({ test: 'net' }).then((data) => {
+  net_get.GET({ test: 'net' }).then((data:any) => {
     console.log(data)
   })
 }
 
+const api_dispatch = () => {
+  console.log('dispatch')
+  net_get.dispatch({ hello: 'world' })
+}
 
 net_get.setWebworker(function () {
   onmessage = ({ data: { jobId, message } }) => {
     console.log('i am receive message is:-----', message);
     console.log('i am receive jobId is:=====', jobId)
-    postMessage({ jobId, result: {msg:'this is a message'} });
+    postMessage({ jobId, result: { msg: 'this is a message' } });
   };
 })
 const web_worker_test = () => {
-  net_get.GET_WORKER({ hello: 'world' }).then((res:any)=>{
-    console.log('fina_get',res)
+  net_get.GET_WORKER({ hello: 'world' }).then((res: any) => {
+    console.log('fina_get', res)
   })
 }
 </script>
@@ -47,6 +51,12 @@ const web_worker_test = () => {
   <div class="card">
     <div class="text-5xl">webworker请求：</div>
     <button type="button" @click="web_worker_test">
+      测试
+    </button>
+  </div>
+  <div class="card">
+    <div class="text-5xl">listener分发：</div>
+    <button type="button" @click="api_dispatch">
       测试
     </button>
   </div>

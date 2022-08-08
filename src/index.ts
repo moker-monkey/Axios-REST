@@ -20,13 +20,14 @@ interface service {
 
 export class Api {
     static mockDataList: any[] = [];
+    static listenerList: any[] = [];
     static dataAdapter: any[] = [];
     static paramsList: any[] = [];
     static validate_results: any[] = [];
     static plugins_option: any = {
         show: false
     }
-
+    static api_id: number = 0;
     success: any;
     error: any;
     isLocalService: boolean = false;
@@ -121,6 +122,7 @@ export class Api {
         flag && console.warn(`warning: method local_service_on of Api is turn on, that any request to server `)
         this.isLocalService = flag;
     }
+
 }
 export class api {
     affix?: string | undefined;
@@ -137,6 +139,7 @@ export class api {
     name!: string;
     description!: string;
     webworkerInstance?: any;
+    api_id: number
 
     constructor(route: string, route1?: string, route2?: string, route3?: string, route4?: string, otherRoute?: string[]) {
         // scope与route后都不需要带/,有函数自动判断并添加
@@ -144,6 +147,7 @@ export class api {
         this.url = this.combination(route_list as string[]);
         this.route = this.url.split('#')[0]
         this.affix = this.url.split('#')[1] && this.url.split('#')[1].slice(1, -1) || '';
+        this.api_id = Api.api_id++ //每一个api都有一个id，在dispatch，setMock，adapter，listen都要用到，即使路径相同，
     }
 
     checkArgument(route: any, id?: number | string) {
@@ -275,5 +279,39 @@ export class api {
     getAxios() {
         return this.axios
     }
-
+    listener(cb: (data: any) => void) {
+        let isHadListener: boolean = false
+        //如果有
+        for (let k in Api.listenerList) {
+            if (Api.listenerList[k].api_id == this.api_id) {
+                Api.listenerList[k].push(cb)
+                isHadListener = true
+                return k
+            }
+        }
+        if (!isHadListener) {
+            Api.listenerList.push([this, cb])
+            return 1
+        }
+    }
+    dispatch(data: any) {
+        // dispatch会将所有的cb都传入data
+        Api.listenerList.map((item, key) => {
+            if (item[0].api_id == this.api_id) {
+                item.map((jitem: any, k: number) => {
+                    if (k != 0) {
+                        jitem(data)
+                    }
+                })
+            }
+        })
+    }
+    rmListener(key: number) {
+        //key可以从listener获取
+        Api.listenerList.map((item, k) => {
+            if (item[0].api_id == this.api_id) {
+                item.splice(key, 1)
+            }
+        })
+    }
 }
