@@ -175,13 +175,13 @@ export class api {
     GET(params: object = {}, id?: number | string, affix?: string) {
         return this.axios.get(`${this.checkArgument(this.route, id)}${id ? id + '/' : ''}${affix ? affix + '/' : this.affix ? this.affix + '/' : ''}`, { params })
     }
-    POST(params: object, id?: number | string, affix?: string) {
+    POST(params: object = {}, id?: number | string, affix?: string) {
         return this.axios.post(`${this.checkArgument(this.route)}${id ? id + '/' : ''}${affix ? affix + '/' : this.affix ? this.affix + '/' : ''}`, params)
     }
-    PUT(params: object, id?: number | string, affix?: string) {
+    PUT(params: object = {}, id?: number | string, affix?: string) {
         return this.axios.put(`${this.checkArgument(this.route)}${id ? id + '/' : ''}${id ? id + '/' : ''}${affix ? affix + '/' : this.affix ? this.affix + '/' : ''}`, params)
     }
-    PATCH(params: object, id?: number | string, affix?: string) {
+    PATCH(params: object = {}, id?: number | string, affix?: string) {
         return this.axios.patch(`${this.checkArgument(this.route)}${id ? id + '/' : ''}${id ? id + '/' : ''}${affix ? affix + '/' : this.affix ? this.affix + '/' : ''}`, params)
     }
     DELETE(id: number | string, affix?: string) {
@@ -279,35 +279,35 @@ export class api {
     getAxios() {
         return this.axios
     }
-    listener(cb: (data: any) => void) {
-        let isHadListener: boolean = false
-        //如果有
-        for (let k in Api.listenerList) {
-            if (Api.listenerList[k].api_id == this.api_id) {
-                Api.listenerList[k].push(cb)
-                isHadListener = true
-                return k
-            }
-        }
-        if (!isHadListener) {
-            Api.listenerList.push([this, cb])
-            return 1
+    //数据流转，store/acquire，store存储的可以是一个promise
+    //事件触发，即主动通知某组件去做某事，我们只需要知道api名称，和api的方法名称，就能够去调用到该api名称的组件的事件，并且把数据传过去
+    //这种方式通常适用于组件的交互
+    //dispatch
+    listenerMap: any = {}
+    listener(name: string, cb: (data: any, getter: any) => void) {
+        //首先是找到这个api实例，然后才匹配name，name是obj的key，obj的value是list
+        // 是否已经存在Api.listenerList中了
+        if (this.listenerMap[name]) {
+            this.listenerMap[name] = [cb];
+            return this
+        } else {
+            // 使用id是因为
+            this.listenerMap[name].push(cb);
+            return this
         }
     }
-    dispatch(data: any) {
+
+    dispatch(name: string, data: any, getter_cb: any) {
         // dispatch会将所有的cb都传入data
-        Api.listenerList.map((item, key) => {
-            if (item[0].api_id == this.api_id) {
-                item.map((jitem: any, k: number) => {
-                    if (k != 0) {
-                        jitem(data)
-                    }
-                })
-            }
-        })
+        // 需要写成异步的
+        if (this.listenerMap[name]) {
+            this.listenerMap[name].map((jitem: any, k: number) => {
+                getter_cb(jitem(data))
+            })
+        }
     }
     rmListener(key: number) {
-        //key可以从listener获取
+        //key可以从listener获取,通常是开发者在元素解绑时使用
         Api.listenerList.map((item, k) => {
             if (item[0].api_id == this.api_id) {
                 item.splice(key, 1)
