@@ -9,7 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "localservicejs": "^3.0.0",
+    "localservicejs": "^3.0.1",
     "vue": "^3.2.37"
   },
   "devDependencies": {

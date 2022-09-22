@@ -26,7 +26,6 @@ _Api.setResponseInterceptors((_config: AxiosRequestConfig) => {
 _Api.local_service_on(true) //开启所有的本地服务,本地服务的优先级低于单一api的local_service_on
 const api = _Api.createApi({})
 
-export const getMenu = new api('core', 'menu')
+export const getMenu = new api('core')
 export const net_get = new api('api', 'get')
-net_get.listener((data) => { console.log(data.hello) })
-
+export default api

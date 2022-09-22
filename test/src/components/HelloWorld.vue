@@ -1,25 +1,22 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { getMenu, net_get } from "../api"
+import api,{ getMenu, net_get } from "../api"
 
 defineProps<{ msg: string }>()
 
 const count = ref(0)
 const test_request = () => {
-  getMenu.GET({ test: 'hello' }).then((data:any) => {
+  let _getMenu = new api('core')
+  _getMenu.GET({ test: 'hello',msg:'success' }).then((data: any) => {
     console.log(data)
   })
 }
 const net_request = () => {
-  net_get.GET({ test: 'net' }).then((data:any) => {
+  net_get.GET({ test: 'net' }).then((data: any) => {
     console.log(data)
   })
 }
 
-const api_dispatch = () => {
-  console.log('dispatch')
-  net_get.dispatch({ hello: 'world' })
-}
 
 net_get.setWebworker(function () {
   onmessage = ({ data: { jobId, message } }) => {
@@ -51,12 +48,6 @@ const web_worker_test = () => {
   <div class="card">
     <div class="text-5xl">webworker请求：</div>
     <button type="button" @click="web_worker_test">
-      测试
-    </button>
-  </div>
-  <div class="card">
-    <div class="text-5xl">listener分发：</div>
-    <button type="button" @click="api_dispatch">
       测试
     </button>
   </div>
