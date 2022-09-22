@@ -50,7 +50,7 @@ export declare class api {
     setName(name: string): this;
     setDescription(description: string): this;
     createAffixApi(affix: string): api;
-    GET(source: 'network' | 'local' | 'webworker', params?: object, id?: number | string, affix?: string): Promise<AxiosResponse<any, any>>;
+    GET(params?: object, id?: number | string, affix?: string): Promise<AxiosResponse<any, any>>;
     POST(params?: object, id?: number | string, affix?: string): Promise<AxiosResponse<any, any>>;
     PUT(params?: object, id?: number | string, affix?: string): Promise<AxiosResponse<any, any>>;
     PATCH(params?: object, id?: number | string, affix?: string): Promise<AxiosResponse<any, any>>;

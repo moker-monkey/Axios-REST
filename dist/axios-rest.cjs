@@ -233,7 +233,7 @@ var api = function () {
     return new api(this.route, '#', affix);
   };
 
-  api.prototype.GET = function (source, params, id, affix) {
+  api.prototype.GET = function (params, id, affix) {
     if (params === void 0) {
       params = {};
     }
